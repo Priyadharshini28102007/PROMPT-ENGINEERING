@@ -560,14 +560,7 @@ C. VAEs (Variational Autoencoders)
 - Decoder generates new data from that representation.
 - Example: Generating new image variations.
 D. Diffusion Models
-
-
-
-
-
-
-
-vosu.ai
+<img width="1376" height="768" alt="image" src="https://github.com/user-attachments/assets/73dc549c-14d3-4fb9-88c4-eebf8d38a69c" />
 
 
 - Starts with random noise.
@@ -596,7 +589,7 @@ Note on Limitations
 
 Each architecture carries trade-offs. Transformers hallucinate and need heavy compute. GANs are unstable to train and prone to mode collapse, producing limited variety. VAEs tend to yield blurrier outputs than GANs or diffusion models. Diffusion models are slow at generation because they need many denoising steps. In practice, architectures are often combined: Stable Diffusion pairs a VAE with a diffusion model and a Transformer text encoder. All of them inherit bias from training data, raise copyright and misuse concerns, and need human oversight in high-stakes fields like healthcare.
 
-Prompt 4: Impact of Scaling in LLMs
+ # Prompt 4: Impact of Scaling in LLMs
 Explain the impact of scaling in Large Language Models. Cover parameters, training data, and compute; scaling laws; emergent abilities; the Chinchilla finding; and the downsides (cost, energy, bias, hallucination). Give concrete examples comparing GPT-3 and later models, and say clearly where you are uncertain.
 
 # chatgpt output :
@@ -778,14 +771,7 @@ Examples: ChatGPT, Google Gemini, Claude, and Llama.
 LLMs mainly use the Transformer architecture to understand relationships between words and predict the next token.
 2. How is an LLM Built? (Step-by-Step)
 
-
-
-
-
-
-
-usenix.org
-
+<img width="1440" height="1062" alt="image" src="https://github.com/user-attachments/assets/9c98de0f-0cbf-41a4-b777-f398040fef44" />
 
 Step 1: Data Collection and Cleaning
 - Collect large amounts of text from books, websites, articles, and code repositories.
@@ -863,4 +849,92 @@ Output: I love programming
 The model predicts the next token repeatedly until the response is complete.
 4. Conclusion
 Large Language Models are powerful AI systems that understand and generate human-like text. Building an LLM involves data collection, cleaning, tokenization, pre-training, fine-tuning, RLHF, evaluation, and deployment. These steps help create useful AI applications such as chatbots, coding assistants, and translation tools.
+
+# claude output :
+What Is a Large Language Model, and How Is One Built?
+
+An LLM is a very large neural network (almost always a decoder-only Transformer) trained to predict the next token in a sequence. Predicting text well at scale forces it to pick up grammar, facts, reasoning patterns, and code structure. Formally, it models P(token_t | token_1 ... token_{t-1}).
+
+The Pipeline
+1. Data collection and cleaning
+
+Sources include web crawls (e.g., Common Crawl), books, code repositories, and scientific papers. Raw data is messy, so teams typically:
+
+Filter low-quality or non-target-language text, often with classifier-based quality scores
+Deduplicate (exact and near-duplicate, e.g., MinHash), which reduces memorization
+Remove personal data and toxic content, and decontaminate against benchmark test sets
+Mix domains in chosen proportions (more code, less spam, and so on)
+
+Data quality often matters as much as quantity.
+
+2. Tokenization
+
+Text is split into subword tokens using an algorithm like Byte-Pair Encoding (BPE), which repeatedly merges the most frequent adjacent symbol pairs. Each token maps to an integer ID, with a vocabulary typically of 32k-200k entries. “unbelievable” might become ["un", "believ", "able"]. Tokenization handles rare words and any language without an “unknown word” problem.
+
+3. Pre-training
+
+The model reads trillions of tokens and learns by self-supervision: the text itself provides the labels (the next token). Training minimizes cross-entropy loss with gradient descent (usually AdamW) across thousands of GPUs, using data, tensor, and pipeline parallelism, mixed precision, and checkpointing. This is the most expensive stage, and it produces a base model: great at continuing text, but not good at following instructions.
+
+4. Fine-tuning (supervised, SFT)
+
+The base model is trained on curated prompt-response pairs (questions with good answers, instructions with correct outputs). This teaches the format of being an assistant. It uses far less data than pre-training, often tens of thousands to millions of examples.
+
+5. RLHF (and alternatives)
+
+Reinforcement Learning from Human Feedback aligns behavior with human preferences:
+
+Sample several responses per prompt; humans rank them.
+Train a reward model to predict those rankings.
+Optimize the LLM against the reward model (e.g., with PPO), with a penalty keeping it close to the SFT model.
+
+Simpler variants such as DPO skip the explicit reward model and train directly on preference pairs. Some labs also use AI-generated feedback.
+
+6. Evaluation
+Benchmarks: MMLU (knowledge), GSM8K (math), HumanEval (code), and others, with the caveat that contamination and overfitting to benchmarks are real problems
+Human evaluation and side-by-side preference tests
+Red-teaming for safety, jailbreaks, and bias
+Measuring hallucination and calibration
+7. Deployment
+Optimization: quantization (e.g., 16-bit to 4/8-bit), KV-caching, batching, speculative decoding
+Serving: GPU inference stacks (such as vLLM) behind APIs, with autoscaling
+Guardrails: content filters, system prompts, rate limits
+Add-ons: retrieval (RAG), tool use, monitoring, and feedback loops for later updates
+Next-Token Prediction (Pseudocode)
+python
+# Training: learn to predict the next token
+```
+for batch in dataset:                       # batch of token-ID sequences
+    inputs  = batch[:, :-1]                 # tokens 1..T-1
+    targets = batch[:, 1:]                  # tokens 2..T (shifted by one)
+    logits  = model(inputs)                 # shape: [batch, T-1, vocab_size]
+    loss    = cross_entropy(logits, targets)
+    loss.backward(); optimizer.step()
+```
+
+# Inference: generate text one token at a time
+```
+tokens = tokenize(prompt)
+while len(tokens) < max_len:
+    logits = model(tokens)[-1]              # scores for the next token
+    probs  = softmax(logits / temperature)  # temperature controls randomness
+    next_t = sample(probs)                  # or argmax for greedy decoding
+    if next_t == END_TOKEN: break
+    tokens.append(next_t)
+return detokenize(tokens)
+Key Takeaway
+```
+Pre-training builds knowledge; fine-tuning and RLHF shape behavior; evaluation and deployment decide whether it is reliable and affordable in practice. Exact recipes for frontier models are mostly unpublished, so the details above reflect common public practice rather than any specific model.
+
+# Comparison Between ChatGPT and Claude
+
+| Criteria         | ChatGPT                                                                         | Claude                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1. Accuracy      | Provides accurate answers, explanations, and information for various topics.    | Provides detailed and accurate answers, especially for long texts and complex topics.       |
+| 2. Creativity    | Good at generating ideas, stories, presentations, images, and creative content. | Good at creative writing, storytelling, and generating natural content.                     |
+| 3. Hallucination | Sometimes generates incorrect information or imaginary facts.                   | Can also generate incorrect information, but often communicates uncertainty.                |
+| 4. Reasoning     | Strong in problem-solving, coding, mathematics, and logical explanations.       | Strong in understanding complex instructions, analysing information, and logical reasoning. |
+| 5. Speed         | Generally provides quick responses, depending on the selected model.            | Response speed depends on the model; some Claude models are very fast.                      
 # Result
+Five identical prompts covering the fundamentals of Generative AI and LLMs were given to chatgpt and claude. The responses were compared on accuracy, creativity, hallucination, reasoning, speed, and engineering usefulness. (Write one or two sentences here: which tool was more accurate, which was faster, which cited sources, and which you would use for engineering work.)
+
+Thus, the comprehensive report on the fundamentals of Generative AI and LLMs, along with the comparison of the two AI tools, was successfully completed.
